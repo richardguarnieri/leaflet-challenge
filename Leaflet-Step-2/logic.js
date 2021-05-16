@@ -47,12 +47,35 @@ d3.json(url).then(response => {
       onEachFeature: onEachFeature,
     });
 
-  createMap(earthquakes);
-
+  // Call Tectonic Func
+  tectonic(earthquakes);
 })
 
+/* GeoJSON - Tectonic Plates Data */
+const tectonic = (earthquakes) => {
+
+const urlTectonic = 'https://raw.githubusercontent.com/fraxen/tectonicplates/master/GeoJSON/PB2002_boundaries.json';
+
+d3.json(urlTectonic).then(response => {
+    
+  console.log(response)
+
+  const style = () => ({
+    "color": "#ff0000",
+    "weight": 1.5,
+    "opacity": 1
+});
+
+  const tectonicPlates = L.geoJSON(response, {
+    style: style
+  });
+
+  // Call createMap func
+  createMap(earthquakes, tectonicPlates);
+})}
+
 /* Creating Leaflet / Mapbox Map */
-const createMap = (earthquakes) => {
+const createMap = (earthquakes, tectonicPlates) => {
 
  // Define streetMap and darkMap, satelliteMap and outdoorsMap layers
  const streetMap = L.tileLayer("https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}", {
@@ -95,14 +118,15 @@ const baseMaps = {
 
 // Create overlay object to hold our overlay layer
 const overlayMaps = {
-  Earthquakes: earthquakes
+  'Earthquakes': earthquakes,
+  'Tectonic Plates': tectonicPlates
 };
 
 // Create our map, giving it the streetmap and earthquakes layers to display on load
 const myMap = L.map("mapid", {
   center: [34.052235, -118.243683],
-  zoom: 8,
-  layers: [streetMap, earthquakes]
+  zoom: 5,
+  layers: [satelliteMap, earthquakes, tectonicPlates]
 });
 
 // Create a layer control to pass in our baseMaps and overlayMaps
@@ -129,6 +153,7 @@ legend.onAdd = function() {
   div.innerHTML += '<i style="background: #ffae00"></i><span>50 - 70</span><br>';
   div.innerHTML += '<i style="background: #ff5e00"></i><span>70 - 90</span><br>';
   div.innerHTML += '<i style="background: #ff0000"></i><span>90+</span><br>';
+  div.innerHTML += '<i class="icon" style="background-image: url(./tectonic.png);background-repeat: no-repeat;"></i><span>Tectonic Plates</span><br>';
   return div;
 };
 // Add the info legend to the map
